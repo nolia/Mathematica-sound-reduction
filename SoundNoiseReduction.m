@@ -19,14 +19,17 @@ GetSoundRate[sound_Sound] := sound[[ 1, 2 ]]
 
 PlotSound[sound_Sound]:= ListPlot[ GetSoundData[sound] ]
 
-AddWhiteNoise[sound_Sound]:= Module[{data = GetSoundData[sound], r = GetSoundRate[sound], 
+AddWhiteNoise[sound_Sound]:= 
+Manipulate[
+Module[{data = GetSoundData[sound], r = GetSoundRate[sound], 
 	lenth, max, res},
-	length = Length[data];
-	max = 0.1 * Max[ Abs /@ data ];
+	lenth = Length[data];
+	max = amp * Max[ Abs /@ data ];
     res = (# + RandomReal[{-max, max}] )& /@ data;
 	(*return*)
 	ListPlay[res, SampleRate->r] 	
- ]
+ ],{{amp, 0.1, "Noise amplitude"}, 0.01, 1 }
+]
 
 End[]
 
