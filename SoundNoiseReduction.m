@@ -11,7 +11,18 @@ PlotSound::usage = "PlotSound[sound] plots the data of the sound"
 AddWhiteNoise::usage = "AddWhiteNoise[sound] add some noise to the sound "
 
 Begin["`Private`"]
-GetSoundData[sound_Sound] := sound[[ 1, 1, 1 ]] 
+GetSoundData[sound_Sound] := Module[ 
+	{sdata, tmp},
+	 If[ (sound[[ 1, 1, 1 ]] // Head) === List, 
+		sdata = sound[[1,1,1]],
+		(*reimport*)
+		Export["temp.wav",sound ];
+		tmp= Import["temp.wav", "Data"];
+		sdata = tmp; 
+	 DeleteFile["temp.wav"];
+	];
+	Return[sdata]
+]
 
 GetSoundRate[sound_Sound] := sound[[ 1, 2 ]]
 
