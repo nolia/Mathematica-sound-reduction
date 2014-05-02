@@ -11,23 +11,31 @@ PlotSound::usage = "PlotSound[sound] plots the data of the sound"
 AddWhiteNoise::usage = "AddWhiteNoise[sound] add some noise to the sound "
 
 Begin["`Private`"]
-
-
 GetSoundData[sound_Sound] := sound[[ 1, 1, 1 ]] 
 
 GetSoundRate[sound_Sound] := sound[[ 1, 2 ]]
 
 PlotSound[sound_Sound]:= ListPlot[ GetSoundData[sound] ]
 
-AddWhiteNoise[sound_Sound]:= 
+Options[AddWhiteNoise] = {WithNoise -> False};
+
+AddWhiteNoise[sound_Sound, otps : OptionsPattern[] ]:= 
 Manipulate[
 Module[{data = GetSoundData[sound], r = GetSoundRate[sound], 
-	lenth, max, res},
+	lenth, max, res, noise,i,
+	(*opts*)
+	withNoise = OptionValue[WithNoise]
+	}, 
 	lenth = Length[data];
 	max = amp * Max[ Abs /@ data ];
-    res = (# + RandomReal[{-max, max}] )& /@ data;
+	noise = Table[RandomReal[{-max, max}],{i, 1, lenth}];
+    res = data + noise;
 	(*return*)
-	ListPlay[res, SampleRate->r] 	
+	Sound[
+		SampledSoundList[ 
+			If[withNoise, {res, noise}, res], 
+		r ] 
+	]
  ],{{amp, 0.1, "Noise amplitude"}, 0.01, 1 }
 ]
 
