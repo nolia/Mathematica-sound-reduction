@@ -17,8 +17,9 @@ GetSoundData[sound_Sound] := Module[
 		sdata = sound[[1,1,1]],
 		(*reimport*)
 		Export["temp.wav",sound ];
-		tmp= Import["temp.wav", "Data"];
-		sdata = tmp; 
+		tmp = Import["temp.wav", "Data"] // Flatten;
+		
+		sdata = tmp;
 	 DeleteFile["temp.wav"];
 	];
 	Return[sdata]
@@ -47,7 +48,7 @@ Module[{data = GetSoundData[sound], r = GetSoundRate[sound],
 			If[withNoise, {res, noise}, res], 
 		r ] 
 	]
- ],{{amp, 0.1, "Noise amplitude"}, 0.01, 1 }
+ ],{{amp, 0.1, "Noise amplitude"}, 0.01, 2 }
 ]
 
 End[]
