@@ -8,6 +8,8 @@ GetSoundRate::usage = "GetSoundRate[sound] returns sample rate of the sound"
 
 PlotSound::usage = "PlotSound[sound] plots the data of the sound"
 
+AddNoise::usage = "AddNoise[sound] adds chosen noise to the sound"
+
 AddWhiteNoise::usage = "AddWhiteNoise[sound] adds random some noise to the sound "
 
 AddBandNoise::usage = "AddBandNoise[sound] adds band-limited noise to sound. "
@@ -33,6 +35,8 @@ GetSoundData[sound_Sound] := Module[
 GetSoundRate[sound_Sound] := sound[[ 1, 2 ]]
 
 PlotSound[sound_Sound]:= ListPlot[ GetSoundData[sound] ]
+
+(*noise creation & manipulations *)
 
 Options[AddWhiteNoise] = {WithNoise -> False};
 
@@ -120,6 +124,14 @@ Module[{plen, data = GetSoundData[sound],r=GetSoundRate[sound], length, noise,i 
  {{nImpl, 1,"Number of pulses"} , 1, 10 },
  {{dur, 0.01, "Pulse duration"}, 0.01, 0.1,0.01}
 ]
+
+(*Main function for adding noise*)
+AddNoise[sound_Sound] :=
+Manipulate[ fun[sound, WithNoise-> wn],
+{{fun, AddWhiteNoise, "Noice type:"}, {AddWhiteNoise, AddPulseNoise, AddBandNoise} }, 
+  {{wn, False, "With noice channel"},{ True, False}, Checkbox }
+	
+];
 
 End[]
 
