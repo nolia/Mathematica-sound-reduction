@@ -10,7 +10,10 @@ PlotSound::usage = "PlotSound[sound] plots the data of the sound"
 
 AddWhiteNoise::usage = "AddWhiteNoise[sound] adds random some noise to the sound "
 
+AddBandNoise::usage = "AddBandNoise[sound] adds band-limited noise to sound. "
+
 AddPulseNoise::usage = "AddPulseNoise[sound] adds pulse noise to sound " 
+
 
 Begin["`Private`"]
 GetSoundData[sound_Sound] := Module[ 
@@ -52,6 +55,35 @@ Module[{data = GetSoundData[sound], r = GetSoundRate[sound],
 	]
  ],{{amp, 0.1, "Noise amplitude"}, 0.01, 2 }
 ]
+
+Options[AddBandNoise] = {WithNoise -> False };
+
+AddBandNoise[sound_Sound, otps : OptionsPattern[] ]:= 
+Manipulate[
+Module[{data = GetSoundData[sound], r = GetSoundRate[sound], 
+	lenth, max, res, noise,i,
+(*opts*)
+	withNoise = OptionValue[WithNoise]
+	}, 
+	lenth = Length[data];
+	max = amp * Max[ Abs /@ data ];
+	noise = BandpassFilter[ Table[RandomReal[{-max, max}],{i, 1, lenth}] ,
+			Sort[{N[bandLow*Pi]//Abs, N[bandHigh*Pi]//Abs}], 
+			SampleRate->r
+			];
+    res = data + noise;
+(*return*)
+	Sound[
+		SampledSoundList[ 
+			If[withNoise, {res, noise}, res], 
+		r ] 
+	]
+ ],{{amp, 0.1, "Noise amplitude"}, 0.01, 2 },
+   {{bandLow , 1, "Low band frequency"}, 20, GetSoundRate[sound] } , 
+   {{bandHigh, 10, "High band frequency "}, 10, GetSoundRate[sound] }  
+]
+
+
 
 Options[AddPulseNoise] = {WithNoise -> False};
 
