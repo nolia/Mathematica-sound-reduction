@@ -18,6 +18,9 @@ addWhiteNoise::usage = "addWhiteNoise[sound] adds random some noise to the sound
 addBandNoise::usage = "addBandNoise[sound] adds band-limited noise to sound. "
 addPulseNoise::usage = "addPulseNoise[sound] adds pulse noise to sound " 
 
+CancelNoiseInSound::usage = "CancelNoiseInSound[sound, sigChannel, noiseChannel] cancels noise \
+	by substracting noise channel from signal channel"
+
 Begin["`Private`"]
 GetSoundData[sound_Sound] := GetSoundData[sound, 1];
 
@@ -161,6 +164,22 @@ Manipulate[ fun[sound, WithNoise-> wn],
 {{fun, AddWhiteNoise, "Noice type:"}, {AddWhiteNoise, AddPulseNoise, AddBandNoise} }, 
   {{wn, False, "With noice channel"},{ True, False}, Checkbox }
 	
+];
+
+(*noise reducing functions*)
+CancelNoiseInSound[sound_Sound, dataChan_Integer, noiseChan_Integer] :=
+ Module[{res, s, noise},If[TrueQ[ ( (GetSoundData[sound, dataChan] // Head) ==  List)
+	&& ( Head[GetSoundData[sound, noiseChan] ] == List) 
+	],
+	s = GetSoundData[sound,dataChan];
+	noise =GetSoundData[sound,noiseChan];
+	res = Plus[ s,Minus[noise] ];
+	Sound[ SampledSoundList[ res, GetSoundRate[sound] ] 
+ ] 
+,
+(*error*)
+	Print["Can't access noise channel !"]
+	]
 ];
 
 End[]
