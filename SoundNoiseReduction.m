@@ -11,11 +11,12 @@ PlotSound::usage = "PlotSound[sound] plots the data of the sound"
 AddNoise::usage = "AddNoise[sound] adds chosen noise to the sound"
 
 AddWhiteNoise::usage = "AddWhiteNoise[sound] adds random some noise to the sound "
-
 AddBandNoise::usage = "AddBandNoise[sound] adds band-limited noise to sound. "
-
 AddPulseNoise::usage = "AddPulseNoise[sound] adds pulse noise to sound " 
 
+addWhiteNoise::usage = "addWhiteNoise[sound] adds random some noise to the sound "
+addBandNoise::usage = "addBandNoise[sound] adds band-limited noise to sound. "
+addPulseNoise::usage = "addPulseNoise[sound] adds pulse noise to sound " 
 
 Begin["`Private`"]
 GetSoundData[sound_Sound] := Module[ 
@@ -68,34 +69,15 @@ Options[AddWhiteNoise] = {WithNoise -> False};
 
 AddWhiteNoise[sound_Sound, otps : OptionsPattern[] ]:= 
 Manipulate[
-addWhiteNoise[sound, amp, WithNoise -> OptionValue[WithNoise] ]
-(*
-Module[{data = GetSoundData[sound], r = GetSoundRate[sound], 
-	lenth, max, res, noise,i,
-(*res*)
-	s,
-(*opts*)
-	withNoise = OptionValue[WithNoise]
-	}, 
-  
-	lenth = Length[data];
-	max = amp * Max[ Abs /@ data ];
-	noise = Table[RandomReal[{-max, max}],{i, 1, lenth}];
-    res = data + noise;
-	s = Sound[
-		SampledSoundList[ 
-			If[withNoise, {res, noise}, res], 
-		r ] 
-	]
- ]
-*)
+	addWhiteNoise[sound, amp, WithNoise -> OptionValue[WithNoise] ]
 ,{{amp, 0.1, "Noise amplitude"}, 0.01, 2 }
 ]
 
-Options[AddBandNoise] = {WithNoise -> False };
+Options[addBandNoise] = {WithNoise -> False };
 
-AddBandNoise[sound_Sound, otps : OptionsPattern[] ]:= 
-Manipulate[
+addBandNoise[sound_Sound, 
+	amp_, bandLow_, bandHigh_,
+	otps : OptionsPattern[] ] := 
 Module[{data = GetSoundData[sound], r = GetSoundRate[sound], 
 	lenth, max, res, noise,i,
 (*opts*)
@@ -114,17 +96,25 @@ Module[{data = GetSoundData[sound], r = GetSoundRate[sound],
 			If[withNoise, {res, noise}, res], 
 		r ] 
 	]
- ],{{amp, 0.1, "Noise amplitude"}, 0.01, 2 },
+ ]
+
+Options[AddBandNoise] = {WithNoise -> False };
+
+AddBandNoise[sound_Sound, otps : OptionsPattern[] ]:= 
+Manipulate[
+	addBandNoise[
+		sound, amp, bandLow, bandHigh,
+		 WithNoise -> OptionValue[WithNoise]
+	]
+  ,{{amp, 0.1, "Noise amplitude"}, 0.01, 2 },
    {{bandLow , 1, "Low band frequency"}, 20, GetSoundRate[sound] } , 
    {{bandHigh, 10, "High band frequency "}, 10, GetSoundRate[sound] }  
 ]
 
-
-
-Options[AddPulseNoise] = {WithNoise -> False};
-
-AddPulseNoise[sound_Sound, otps : OptionsPattern[] ] :=
-Manipulate[
+Options[addPulseNoise] = {WithNoise -> False};
+addPulseNoise[sound_Sound, 
+amp_,  nImpl_, dur_,
+otps : OptionsPattern[] ] :=
 Module[{plen, data = GetSoundData[sound],r=GetSoundRate[sound], length, noise,i , max , padLength,pulseTable,
 	res, interLength , 
 	withNoise = OptionValue[WithNoise]
@@ -152,6 +142,13 @@ Module[{plen, data = GetSoundData[sound],r=GetSoundRate[sound], length, noise,i 
 		r ] 
 	]
 ]
+
+
+Options[AddPulseNoise] = {WithNoise -> False};
+
+AddPulseNoise[sound_Sound, otps : OptionsPattern[] ] :=
+Manipulate[
+	addPulseNoise[sound, amp, nImpl, dur]
 ,{{amp, 1, "Noise amplitude"}, 1, 10} , 
  {{nImpl, 1,"Number of pulses"} , 1, 10 },
  {{dur, 0.01, "Pulse duration"}, 0.01, 0.1,0.01}
