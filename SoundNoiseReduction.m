@@ -38,26 +38,58 @@ PlotSound[sound_Sound]:= ListPlot[ GetSoundData[sound] ]
 
 (*noise creation & manipulations *)
 
-Options[AddWhiteNoise] = {WithNoise -> False};
+Options[addWhiteNoise] = {WithNoise -> False};
 
-AddWhiteNoise[sound_Sound, otps : OptionsPattern[] ]:= 
-Manipulate[
+addWhiteNoise[sound_Sound, 
+	amp1_Real, 
+	opts : OptionsPattern[]] := 
 Module[{data = GetSoundData[sound], r = GetSoundRate[sound], 
-	lenth, max, res, noise,i,
+	lenth, max, res, noise,i,amp,
+(*res*)
+	s,
 (*opts*)
 	withNoise = OptionValue[WithNoise]
 	}, 
+	amp = If[amp1 < 0.01, 0.01, If[amp1 > 3, 3, amp1]];
+  
 	lenth = Length[data];
 	max = amp * Max[ Abs /@ data ];
 	noise = Table[RandomReal[{-max, max}],{i, 1, lenth}];
     res = data + noise;
-(*return*)
-	Sound[
+	s = Sound[
 		SampledSoundList[ 
 			If[withNoise, {res, noise}, res], 
 		r ] 
 	]
- ],{{amp, 0.1, "Noise amplitude"}, 0.01, 2 }
+ ]
+
+
+Options[AddWhiteNoise] = {WithNoise -> False};
+
+AddWhiteNoise[sound_Sound, otps : OptionsPattern[] ]:= 
+Manipulate[
+addWhiteNoise[sound, amp, WithNoise -> OptionValue[WithNoise] ]
+(*
+Module[{data = GetSoundData[sound], r = GetSoundRate[sound], 
+	lenth, max, res, noise,i,
+(*res*)
+	s,
+(*opts*)
+	withNoise = OptionValue[WithNoise]
+	}, 
+  
+	lenth = Length[data];
+	max = amp * Max[ Abs /@ data ];
+	noise = Table[RandomReal[{-max, max}],{i, 1, lenth}];
+    res = data + noise;
+	s = Sound[
+		SampledSoundList[ 
+			If[withNoise, {res, noise}, res], 
+		r ] 
+	]
+ ]
+*)
+,{{amp, 0.1, "Noise amplitude"}, 0.01, 2 }
 ]
 
 Options[AddBandNoise] = {WithNoise -> False };
