@@ -19,14 +19,15 @@ addBandNoise::usage = "addBandNoise[sound] adds band-limited noise to sound. "
 addPulseNoise::usage = "addPulseNoise[sound] adds pulse noise to sound " 
 
 Begin["`Private`"]
-GetSoundData[sound_Sound] := Module[ 
+GetSoundData[sound_Sound] := GetSoundData[sound, 1];
+
+GetSoundData[sound_Sound, chan_Integer] := Module[ 
 	{sdata, tmp},
-	 If[ (sound[[ 1, 1, 1 ]] // Head) === List, 
-		sdata = sound[[1,1,1]],
+	 If[ (sound[[ 1, 1, chan ]] // Head) === List, 
+		sdata = sound[[1, 1, chan]],
 		(*reimport*)
 		Export["temp.wav",sound ];
 		tmp = Import["temp.wav", "Data"] // Flatten;
-		
 		sdata = tmp;
 	 DeleteFile["temp.wav"];
 	];
