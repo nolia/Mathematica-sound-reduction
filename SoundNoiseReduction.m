@@ -20,13 +20,20 @@ addWhiteNoise::usage = "addWhiteNoise[sound] adds random some noise to the sound
 addBandNoise::usage = "addBandNoise[sound] adds band-limited noise to sound. "
 addPulseNoise::usage = "addPulseNoise[sound] adds pulse noise to sound " 
 
+cancelNoiseInSound::usage = "CancelNoiseInSound[sound, sigChannel, noiseChannel] cancels noise \
+by substracting noise channel from signal channel"
+soundWienerFilter::usage = "SoundWienerFilter[sound, r] clears noise from sound \
+by applying Wienner Filter with dimension r to sound data. "
+soundBandFilter::usage = "SoundBandFilter[sound, low, high] clears noise from sound \
+by appluing Bandpass Filter to sound data. "
+
 CancelNoiseInSound::usage = "CancelNoiseInSound[sound, sigChannel, noiseChannel] cancels noise \
 by substracting noise channel from signal channel"
-
 SoundWienerFilter::usage = "SoundWienerFilter[sound, r] clears noise from sound \
 by applying Wienner Filter with dimension r to sound data. "
 SoundBandFilter::usage = "SoundBandFilter[sound, low, high] clears noise from sound \
 by appluing Bandpass Filter to sound data. "
+
 
 Begin["`Private`"]
 GetSoundData[sound_Sound] := GetSoundData[sound, 1];
@@ -188,7 +195,7 @@ Manipulate[ fun[sound, WithNoise-> wn],
 ];
 
 (*noise reducing functions*)
-CancelNoiseInSound[sound_Sound, dataChan_Integer, noiseChan_Integer] :=
+cancelNoiseInSound[sound_Sound, dataChan_Integer, noiseChan_Integer] :=
  Module[{res, s, noise},If[TrueQ[ ( (GetSoundData[sound, dataChan] // Head) ==  List)
 	&& ( Head[GetSoundData[sound, noiseChan] ] == List) 
 	],
@@ -203,19 +210,41 @@ CancelNoiseInSound[sound_Sound, dataChan_Integer, noiseChan_Integer] :=
 	]
 ];
 
-SoundWienerFilter[sound_Sound, r_Integer]:= 
+getChannelCount[sound_Sound] := Length[sound[[1,1]] ]
+
+CancelNoiseInSound[sound_Sound] :=
+Manipulate[
+	cancelNoiseInSound[sound, dataChan, noiseChan ],
+	{{dataChan, 1, "Data channel"}, 1, getChannelCount[sound],1 },
+	{{noiseChan, 2, "Noise channel"}, 1, getChannelCount[sound],1 },
+	ControlType->Setter
+]
+
+soundWienerFilter[sound_Sound, r_Integer]:= 
 	Module[{res,data = GetSoundData[sound], rate = GetSoundRate[sound]},
 	res = WienerFilter[data,r];
 	Sound[SampledSoundList[res, rate]]
 ];
 
-SoundBandFilter[sound_Sound, low_, high_] :=
+SoundWienerFilter[sound_Sound] :=
+ Manipulate[
+	SoundWienerFilter[sound, r]
+,{{r, 1,"r"}, 1, 10, 1}]
+
+soundBandFilter[sound_Sound, low_, high_] :=
 Module[{data = GetSoundData[sound], r = GetSoundRate[sound], res , l, h},
 	{l,h} = Sort[{low, high}];
 	res = BandpassFilter[data, 
 		{ If[l<0, 0, l ] // N, If[ h > r, r, h] // N} *Pi, 
 		SampleRate->r];
 	Sound[SampledSoundList[res,r]]
+]
+
+SoundBandFilter[sound_Sound] :=
+Manipulate[
+ soundBandFilter[sound, low, high]
+,{{low , GetSoundRate[sound] / 20,"Low frequency"}, 0, GetSoundRate[sound] } 
+,{{high , GetSoundRate[sound] / 10,"High frequency"}, 0, GetSoundRate[sound] }
 ]
 
 
