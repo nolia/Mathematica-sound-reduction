@@ -9,6 +9,8 @@ GetSoundDiff::usage = "GetSoundDiff[sound1, sound2] get numerical abs for differ
 sound1 and sound2."
 ShowSoundDiff::usage = "ShowSoundDiff[sound1, sound2] shows diff between sound1\
 and sound2 as bar chart. "
+SaveSoundDialog::usage = "SaveSoundDialog[sound] shows the dialog to save sound to file"
+
 
 AddNoise::usage = "AddNoise[sound] adds chosen noise to the sound"
 
@@ -68,6 +70,7 @@ ShowSoundDiff[s1_Sound, s2_Sound] :=
    ]
 ]
 
+SaveSoundDialog[sound_Sound] := Button["Save file",Export[SystemDialogInput["FileSave", "sound.wav"],sound] ]
 
 (*noise creation & manipulations *)
 
@@ -100,9 +103,12 @@ Module[{data = GetSoundData[sound], r = GetSoundRate[sound],
 Options[AddWhiteNoise] = {WithNoise -> False};
 
 AddWhiteNoise[sound_Sound, otps : OptionsPattern[] ]:= 
+Module[{res},
 Manipulate[
-	addWhiteNoise[sound, amp, WithNoise -> OptionValue[WithNoise] ]
+	res = addWhiteNoise[sound, amp, WithNoise -> OptionValue[WithNoise] ];
+	Column[{res, SaveSoundDialog[res]}]
 ,{{amp, 0.1, "Noise amplitude"}, 0.01, 2 }
+]
 ]
 
 Options[addBandNoise] = {WithNoise -> False };
@@ -133,14 +139,17 @@ Module[{data = GetSoundData[sound], r = GetSoundRate[sound],
 Options[AddBandNoise] = {WithNoise -> False };
 
 AddBandNoise[sound_Sound, otps : OptionsPattern[] ]:= 
+Module[{res},
 Manipulate[
-	addBandNoise[
+	res = addBandNoise[
 		sound, amp, bandLow, bandHigh,
 		 WithNoise -> OptionValue[WithNoise]
-	]
+	];
+	Column[{res, SaveSoundDialog[res]}]
   ,{{amp, 0.1, "Noise amplitude"}, 0.01, 2 },
    {{bandLow , 1, "Low band frequency"}, 20, GetSoundRate[sound] } , 
    {{bandHigh, 10, "High band frequency "}, 10, GetSoundRate[sound] }  
+]
 ]
 
 Options[addPulseNoise] = {WithNoise -> False};
@@ -179,11 +188,14 @@ Module[{plen, data = GetSoundData[sound],r=GetSoundRate[sound], length, noise,i 
 Options[AddPulseNoise] = {WithNoise -> False};
 
 AddPulseNoise[sound_Sound, otps : OptionsPattern[] ] :=
+Module[{res},
 Manipulate[
-	addPulseNoise[sound, amp, nImpl, dur]
+	res = addPulseNoise[sound, amp, nImpl, dur, WithNoise -> OptionValue[WithNoise]];
+	Column[{res, SaveSoundDialog[res]}]
 ,{{amp, 1, "Noise amplitude"}, 1, 10} , 
  {{nImpl, 1,"Number of pulses"} , 1, 10 },
  {{dur, 0.01, "Pulse duration"}, 0.01, 0.1,0.01}
+]
 ]
 
 (*Main function for adding noise*)
