@@ -36,6 +36,7 @@ by applying Wienner Filter with dimension r to sound data. "
 SoundBandFilter::usage = "SoundBandFilter[sound, low, high] clears noise from sound \
 by appluing Bandpass Filter to sound data. "
 
+ReduceNoise::usage = "ReduceNoise[sound] shows the reduce sound methods ."
 
 Begin["`Private`"]
 GetSoundData[sound_Sound] := GetSoundData[sound, 1];
@@ -225,11 +226,14 @@ cancelNoiseInSound[sound_Sound, dataChan_Integer, noiseChan_Integer] :=
 getChannelCount[sound_Sound] := Length[sound[[1,1]] ]
 
 CancelNoiseInSound[sound_Sound] :=
+Module[{res},
 Manipulate[
-	cancelNoiseInSound[sound, dataChan, noiseChan ],
+	res = cancelNoiseInSound[sound, dataChan, noiseChan ];
+	Column[{res, SaveSoundDialog[res]}],
 	{{dataChan, 1, "Data channel"}, 1, getChannelCount[sound],1 },
 	{{noiseChan, 2, "Noise channel"}, 1, getChannelCount[sound],1 },
 	ControlType->Setter
+]
 ]
 
 soundWienerFilter[sound_Sound, r_Integer]:= 
@@ -239,9 +243,12 @@ soundWienerFilter[sound_Sound, r_Integer]:=
 ];
 
 SoundWienerFilter[sound_Sound] :=
+Module[{res},
  Manipulate[
-	SoundWienerFilter[sound, r]
+	res = SoundWienerFilter[sound, r];
+    Column[{res, SaveSoundDialog[res]}]
 ,{{r, 1,"r"}, 1, 10, 1}]
+]
 
 soundBandFilter[sound_Sound, low_, high_] :=
 Module[{data = GetSoundData[sound], r = GetSoundRate[sound], res , l, h},
@@ -253,12 +260,20 @@ Module[{data = GetSoundData[sound], r = GetSoundRate[sound], res , l, h},
 ]
 
 SoundBandFilter[sound_Sound] :=
+Module[{res},
 Manipulate[
- soundBandFilter[sound, low, high]
+    res = soundBandFilter[sound, low, high];
+	Column[{res, SaveSoundDialog[res]}]
 ,{{low , GetSoundRate[sound] / 20,"Low frequency"}, 0, GetSoundRate[sound] } 
 ,{{high , GetSoundRate[sound] / 10,"High frequency"}, 0, GetSoundRate[sound] }
 ]
+]
 
+ReduceNoise[sound_Sound] :=
+Manipulate[
+	fun[sound],
+	{{fun, SoundBandFilter, "Reduce method:"}, {SoundBandFilter, SoundWienerFilter} }, ControlType->Setter
+]
 
 End[]
 
