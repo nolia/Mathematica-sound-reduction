@@ -3,10 +3,12 @@
 BeginPackage["SoundNoiseReduction`"];
 
 GetSoundData::usage = "GetSoundData[sound] returns number representation of the sound"
-
 GetSoundRate::usage = "GetSoundRate[sound] returns sample rate of the sound"
-
 PlotSound::usage = "PlotSound[sound] plots the data of the sound"
+GetSoundDiff::usage = "GetSoundDiff[sound1, sound2] get numerical abs for difference between\
+sound1 and sound2."
+ShowSoundDiff::usage = "ShowSoundDiff[sound1, sound2] shows diff between sound1\
+and sound2 as bar chart. "
 
 AddNoise::usage = "AddNoise[sound] adds chosen noise to the sound"
 
@@ -45,6 +47,20 @@ GetSoundData[sound_Sound, chan_Integer] := Module[
 GetSoundRate[sound_Sound] := sound[[ 1, 2 ]]
 
 PlotSound[sound_Sound]:= ListPlot[ GetSoundData[sound] ]
+
+GetSoundDiff[s1_Sound, s2_Sound] :=
+	Module[{data1 = GetSoundData[s1], data2 = GetSoundData[s2]},
+	Abs[ data1 - data2 ] // {Max[#],Mean[#],Min[#] }&
+]
+
+ShowSoundDiff[s1_Sound, s2_Sound] :=
+  Module[{diff = GetSoundDiff[s1,s2]},
+	BarChart[diff,
+    ChartLegends->{"Max" ,"Average","Min"} , 
+    ChartStyle->"DarkRainbow"
+   ]
+]
+
 
 (*noise creation & manipulations *)
 
