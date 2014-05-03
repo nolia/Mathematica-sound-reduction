@@ -19,7 +19,12 @@ addBandNoise::usage = "addBandNoise[sound] adds band-limited noise to sound. "
 addPulseNoise::usage = "addPulseNoise[sound] adds pulse noise to sound " 
 
 CancelNoiseInSound::usage = "CancelNoiseInSound[sound, sigChannel, noiseChannel] cancels noise \
-	by substracting noise channel from signal channel"
+by substracting noise channel from signal channel"
+
+SoundWienerFilter::usage = "SoundWienerFilter[sound, r] clears noise from sound \
+by applying Wienner Filter with dimension r to sound data. "
+SoundBandFilter::usage = "SoundBandFilter[sound, low, high] clears noise from sound \
+by appluing Bandpass Filter to sound data. "
 
 Begin["`Private`"]
 GetSoundData[sound_Sound] := GetSoundData[sound, 1];
@@ -181,6 +186,22 @@ CancelNoiseInSound[sound_Sound, dataChan_Integer, noiseChan_Integer] :=
 	Print["Can't access noise channel !"]
 	]
 ];
+
+SoundWienerFilter[sound_Sound, r_Integer]:= 
+	Module[{res,data = GetSoundData[sound], rate = GetSoundRate[sound]},
+	res = WienerFilter[data,r];
+	Sound[SampledSoundList[res, rate]]
+];
+
+SoundBandFilter[sound_Sound, low_, high_] :=
+Module[{data = GetSoundData[sound], r = GetSoundRate[sound], res , l, h},
+	{l,h} = Sort[{low, high}];
+	res = BandpassFilter[data, 
+		{ If[l<0, 0, l ] // N, If[ h > r, r, h] // N} *Pi, 
+		SampleRate->r];
+	Sound[SampledSoundList[res,r]]
+]
+
 
 End[]
 
